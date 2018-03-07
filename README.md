@@ -1,2 +1,2 @@
 # naivebayes
-Naive Bayes Digit Classifier 
+Naive Bayes Classifier 
