@@ -119,6 +119,7 @@ void makeProbability(Model& model, const int arr[10]) {
         }
     }
 
+    //
     /*for (int num = 0; num < CLASS_NUM; num++) {
         for (int width = 0; width < IMAGE_SIZE; width++) {
             for (int height = 0; height < IMAGE_SIZE; height++) {
