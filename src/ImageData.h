@@ -18,16 +18,23 @@
 
 using namespace std;
 
+const int IMAGE_SIZE = 28;
+const int CLASS_NUM = 10;
+const int BINARY = 2;
+//laplace smoothing
+const int K = 3;
+
+
 class ImageData {
 public:
     bool Image[28][28];
 };
 
-vector<ImageData> trainingData; //use to to store all the images
+//vector<ImageData> trainingData; //use to to store all the images
 vector<int> labels;
 
 class Model{
-
+public:
     void saveToFile();
     void loadFromFile();
 double probabilities[28][28][10][2];//value of features, 1 or 0
