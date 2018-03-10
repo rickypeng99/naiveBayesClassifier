@@ -4,6 +4,7 @@
 #include "ImageData.h"
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 
@@ -36,9 +37,9 @@ void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] ) {
     }
 }
 
-vector<int> readLabelFromFile() {
+vector<int> readLabelFromFile(string fileName) {
     ifstream inFile;
-    inFile.open("../data/traininglabels");
+    inFile.open("../data/" + fileName);
     vector<int> labels;
     int nextInt;
     while (inFile >> nextInt) {
@@ -103,7 +104,7 @@ void addStatisticToProbability(Model& model, const vector<int> &labels, const ve
 
 }
 
-void makeProbability(Model& model, int arr[10]) {
+void makeProbability(Model& model, const int arr[10]) {
 
 
     for (int width = 0; width < IMAGE_SIZE; width++) {
@@ -112,13 +113,13 @@ void makeProbability(Model& model, int arr[10]) {
                 for (int binary = 0; binary < BINARY; binary++) {
                     double temp = model.probabilities[width][height][num][binary];
                     model.probabilities[width][height][num][binary] =
-                            (K + temp) / (K + K + arr[num]);
+                            (K + temp) / (double)(K + K + arr[num]);
                 }
             }
         }
     }
 
-    for (int num = 0; num < CLASS_NUM; num++) {
+    /*for (int num = 0; num < CLASS_NUM; num++) {
         for (int width = 0; width < IMAGE_SIZE; width++) {
             for (int height = 0; height < IMAGE_SIZE; height++) {
                 for (int binary = 0; binary < 2; binary++) {
@@ -128,9 +129,100 @@ void makeProbability(Model& model, int arr[10]) {
             cout << endl;
         }
         cout << endl;
+    }*/
+
+}
+
+void calculateProbabilityOfClass(Model& model, const int arr[10]) {
+    for (int i = 0 ; i < 10; i ++) {
+        model.prob_of_class[i] = arr[i] / 5000.0;
     }
 
 }
+
+void determineImage(Model& model, const int arr[10]) {
+
+    ifstream inFile;
+    inFile.open("../data/testimages");
+
+    string line;
+    int count = 0;
+
+
+    ImageData imageData;
+    vector<ImageData> trainingData;
+    while (getline(inFile, line)) {
+        for (int i = 0; i < IMAGE_SIZE; i++) {
+            imageData.Image[count][i] = transferBool(line.at(i));
+        }
+
+        count++;
+
+        if (count == IMAGE_SIZE) {
+            //create a temporary imageData to save current value
+            ImageData temp = imageData;
+            //put the temp into the vector
+            trainingData.push_back(temp);
+            //clear the memory of image array
+            memset(imageData.Image, 0, sizeof(imageData.Image));
+
+        }
+    }
+
+    vector<int> guessingLabels;
+
+    for (int image = 0; image < trainingData.size(); image++) {
+        double posteriorPossibility[10];
+        //adding the log(P(class) to each of the posterior possibility first
+        for (int loop = 0; loop < CLASS_NUM; loop++) {
+            posteriorPossibility[loop] = log10(static_cast<float>(arr[loop]));
+        }
+
+        double temp;
+        for (int i = 0; i < IMAGE_SIZE; i++) {
+            for (int j = 0; j < IMAGE_SIZE; j++) {
+                if (trainingData.at(image).Image[i][j] == 0) {
+                    for (int classNum = 0; classNum < CLASS_NUM; classNum++) {
+                        temp = log10(model.probabilities[i][j][classNum][0]);
+                        posteriorPossibility[classNum] += temp;
+                    }
+                } else {
+                    for (int classNum = 0; classNum < CLASS_NUM; classNum++) {
+                        temp = log10(model.probabilities[i][j][classNum][1]);
+                        posteriorPossibility[classNum] += temp;
+                    }
+                }
+            }
+        }
+        double max = posteriorPossibility[0];
+        double maxPos = 0;
+        for (int i = 0; i < CLASS_NUM; i++) {
+            if (posteriorPossibility[i] > max) {
+                max = posteriorPossibility[i];
+                maxPos = i;
+            }
+        }
+
+        guessingLabels.push_back(maxPos);
+
+
+
+    }
+    vector<int> labels = readLabelFromFile("testlabels");
+
+    int correct = 0;
+    for (int i = 0; i < labels.size(); i++) {
+        if (labels.at(i) == guessingLabels.at(i)) {
+            correct++;
+        }
+    }
+
+
+    cout << "The AI has successfully recognized " << (double)correct/1000.0*100.0 << "% of the testing images." << endl;
+
+}
+
+
 
 
 
@@ -162,14 +254,25 @@ int main() {
 
         }
     }
-    vector<int> result = readLabelFromFile();
+    vector<int> result = readLabelFromFile("traininglabels");
     int classFrequencyArray [10];
     countClassFrequency(classFrequencyArray, result);
 
 
+    // TRAINING PHASE
+    cout << "Training the AI, using the K value of " << K << " for laplace smoothing" << endl;
     Model model;
+    //count the amount of C = class at F = Fij
     addStatisticToProbability(model, result, trainingData);
+    //transfer the counting to possibilities
     makeProbability(model, classFrequencyArray);
+    //Getting P(class)
+    calculateProbabilityOfClass(model, classFrequencyArray);
+
+    cout << "Finished training your AI with 5000 images" << endl;
+
+    //CLASSIFICATION PHASE
+    determineImage(model, classFrequencyArray);
 
 
 

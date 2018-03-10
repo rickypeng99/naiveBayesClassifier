@@ -22,7 +22,7 @@ const int IMAGE_SIZE = 28;
 const int CLASS_NUM = 10;
 const int BINARY = 2;
 //laplace smoothing
-const int K = 3;
+const int K = 1;
 
 
 class ImageData {
@@ -30,8 +30,6 @@ public:
     bool Image[28][28];
 };
 
-//vector<ImageData> trainingData; //use to to store all the images
-vector<int> labels;
 
 class Model{
 public:
