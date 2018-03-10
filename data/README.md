@@ -1,3 +1,3 @@
 # Data Files
 
-You should store your data files here.
+The data files are stored in here
