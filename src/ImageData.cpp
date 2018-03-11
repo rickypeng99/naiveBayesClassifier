@@ -39,9 +39,12 @@ bool Model::loadFromFile() {
     int classNum = 0;
     int binary = 0;
 
-    //ifstream inFile("../data/model.txt");
+    string fileName;
+    cin >> fileName;
 
-    while(cin >> data) {
+    ifstream inFile("../data/" + fileName);
+
+    while(inFile >> data) {
         probabilities[i][j][classNum][binary] = data;
         binary++;
         if (binary > 1) {
