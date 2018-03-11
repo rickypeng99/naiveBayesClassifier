@@ -33,14 +33,9 @@ public:
 
 class Model{
 public:
-    void saveToFile();
-    void loadFromFile();
+    bool saveToFile();
+    bool loadFromFile();
 double probabilities[28][28][10][2];//value of features, 1 or 0
-//[10] represents 10 numbers
-//i, j ,class, value
-//given this class, the value of position ij has the probability is this value.
-
-//go through the training data, for every Fij, i add one corresponding to what label equals to.
 double prob_of_class[10];
 };
 #endif //NAIVEBAYES_IMAGEDATA_H

@@ -2,20 +2,68 @@
 // Created by Ricky Peng on 3/9/18.
 //
 #include "ImageData.h"
-#include <iostream>
 #include <fstream>
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 
 //loop that reads the string from lines
 //read the characters stick them into the arrays
-void Model::saveToFile() {
+bool Model::saveToFile() {
 
+    ofstream saveFile("../data/model.txt");
+    if (!saveFile) {
+        return false;
+    }
+
+    for (int num = 0; num < CLASS_NUM; num++) {
+        for (int width = 0; width < IMAGE_SIZE; width++) {
+            for (int height = 0; height < IMAGE_SIZE; height++) {
+                for (int binary = 0; binary < 2; binary++) {
+                    saveFile<< probabilities[width][height][num][binary] << " ";
+                }
+            }
+            saveFile << endl;
+        }
+        saveFile << endl;
+    }
+    saveFile.close();
+    return true;
 }
 
-void Model::loadFromFile() {
+bool Model::loadFromFile() {
+    double data = 0.0;
+    int i = 0;
+    int j = 0;
+    int classNum = 0;
+    int binary = 0;
 
+    ifstream inFile("../data/model.txt");
+
+    while(inFile >> data) {
+        probabilities[i][j][classNum][binary] = data;
+        binary++;
+        if (binary > 1) {
+            j++;
+            binary = 0;
+        }
+        if (j > 27) {
+            i++;
+            j = 0;
+        }
+        if (i > 27) {
+            classNum++;
+            i=0;
+            j=0;
+        }
+    }
+
+
+
+
+
+    return false;
 }
 
 
@@ -37,7 +85,7 @@ void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] ) {
     }
 }
 
-vector<int> readLabelFromFile(string fileName) {
+vector<int> readLabelFromFile(const string &fileName) {
     ifstream inFile;
     inFile.open("../data/" + fileName);
     vector<int> labels;
@@ -76,7 +124,7 @@ void addStatisticToProbability(Model& model, const vector<int> &labels, const ve
     }
 
 
-    for (int pos = 0; pos < trainingData.size(); pos++) {
+    for (unsigned long pos = 0; pos < trainingData.size(); pos++) {
         ImageData currentImage = trainingData.at((pos));
         for (int i = 0; i < IMAGE_SIZE; i++) {
             for (int j = 0; j < IMAGE_SIZE; j++) {
@@ -150,10 +198,10 @@ void determineImage(Model& model, const int arr[10]) {
     int count = 0;
 
 
-    ImageData imageData;
+    ImageData imageData = ImageData();
     vector<ImageData> trainingData;
     while (getline(inFile, line)) {
-        for (int i = 0; i < IMAGE_SIZE; i++) {
+        for (unsigned long i = 0; i < IMAGE_SIZE; i++) {
             imageData.Image[count][i] = transferBool(line.at(i));
         }
 
@@ -172,7 +220,7 @@ void determineImage(Model& model, const int arr[10]) {
 
     vector<int> guessingLabels;
 
-    for (int image = 0; image < trainingData.size(); image++) {
+    for (auto &image : trainingData) {
         double posteriorPossibility[10];
         //adding the log(P(class) to each of the posterior possibility first
         for (int loop = 0; loop < CLASS_NUM; loop++) {
@@ -182,7 +230,7 @@ void determineImage(Model& model, const int arr[10]) {
         double temp;
         for (int i = 0; i < IMAGE_SIZE; i++) {
             for (int j = 0; j < IMAGE_SIZE; j++) {
-                if (trainingData.at(image).Image[i][j] == 0) {
+                if (image.Image[i][j] == 0) {
                     for (int classNum = 0; classNum < CLASS_NUM; classNum++) {
                         temp = log10(model.probabilities[i][j][classNum][0]);
                         posteriorPossibility[classNum] += temp;
@@ -204,7 +252,7 @@ void determineImage(Model& model, const int arr[10]) {
             }
         }
 
-        guessingLabels.push_back(maxPos);
+        guessingLabels.push_back(static_cast<int &&>(maxPos));
 
 
 
@@ -212,7 +260,7 @@ void determineImage(Model& model, const int arr[10]) {
     vector<int> labels = readLabelFromFile("testlabels");
 
     int correct = 0;
-    for (int i = 0; i < labels.size(); i++) {
+    for (unsigned long i = 0; i < labels.size(); i++) {
         if (labels.at(i) == guessingLabels.at(i)) {
             correct++;
         }
@@ -228,52 +276,67 @@ void determineImage(Model& model, const int arr[10]) {
 
 
 int main() {
+    ifstream in("../data/model.txt");
+    if (in.peek() == std::ifstream::traits_type::eof()) {
 
-    ifstream inFile;
-    inFile.open("../data/trainingimages");
+        ifstream inFile;
+        inFile.open("../data/trainingimages");
 
-    string line;
-    int count = 0;
+        string line;
+        int count = 0;
 
 
-    ImageData imageData;
-    vector<ImageData> trainingData;
-    while (getline(inFile, line)) {
-        for (int i = 0; i < IMAGE_SIZE; i++) {
-            imageData.Image[count][i] = transferBool(line.at(i));
+        ImageData imageData{};
+        vector<ImageData> trainingData;
+        while (getline(inFile, line)) {
+            for (unsigned long i = 0; i < IMAGE_SIZE; i++) {
+                imageData.Image[count][i] = transferBool(line.at(i));
+            }
+
+            count++;
+
+            if (count == IMAGE_SIZE) {
+                //create a temporary imageData to save current value
+                ImageData temp = imageData;
+                //put the temp into the vector
+                trainingData.push_back(temp);
+                //clear the memory of image array
+                memset(imageData.Image, 0, sizeof(imageData.Image));
+
+            }
         }
+        vector<int> result = readLabelFromFile("traininglabels");
+        int classFrequencyArray[10];
+        countClassFrequency(classFrequencyArray, result);
 
-        count++;
 
-        if (count == IMAGE_SIZE) {
-            //create a temporary imageData to save current value
-            ImageData temp = imageData;
-            //put the temp into the vector
-            trainingData.push_back(temp);
-            //clear the memory of image array
-            memset(imageData.Image, 0, sizeof(imageData.Image));
+        // TRAINING PHASE
+        cout << "Training the AI, using the K value of " << K << " for laplace smoothing" << endl;
+        Model model{};
+        //count the amount of C = class at F = Fij
+        addStatisticToProbability(model, result, trainingData);
+        //transfer the counting to possibilities
+        makeProbability(model, classFrequencyArray);
+        //Getting P(class)
+        calculateProbabilityOfClass(model, classFrequencyArray);
 
-        }
+        cout << "Finished training your AI with 5000 images" << endl;
+        cout << "The model has been saved into model.txt" << endl;
+
+        model.saveToFile();
+        //CLASSIFICATION PHASE
+        determineImage(model, classFrequencyArray);
+    } else {
+        Model model;
+        model.loadFromFile();
+        vector<int> result = readLabelFromFile("traininglabels");
+        int classFrequencyArray[10];
+        countClassFrequency(classFrequencyArray, result);
+        //CLASSIFICATION PHASE
+        determineImage(model, classFrequencyArray);
     }
-    vector<int> result = readLabelFromFile("traininglabels");
-    int classFrequencyArray [10];
-    countClassFrequency(classFrequencyArray, result);
 
 
-    // TRAINING PHASE
-    cout << "Training the AI, using the K value of " << K << " for laplace smoothing" << endl;
-    Model model;
-    //count the amount of C = class at F = Fij
-    addStatisticToProbability(model, result, trainingData);
-    //transfer the counting to possibilities
-    makeProbability(model, classFrequencyArray);
-    //Getting P(class)
-    calculateProbabilityOfClass(model, classFrequencyArray);
-
-    cout << "Finished training your AI with 5000 images" << endl;
-
-    //CLASSIFICATION PHASE
-    determineImage(model, classFrequencyArray);
 
 
 
