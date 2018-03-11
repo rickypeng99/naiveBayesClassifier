@@ -38,4 +38,9 @@ public:
 double probabilities[28][28][10][2];//value of features, 1 or 0
 double prob_of_class[10];
 };
-#endif //NAIVEBAYES_IMAGEDATA_H
+#endif //NAIVEBAYES_IMAGEDATA_
+
+
+void calculateProbabilityOfClass(Model& model, const int arr[10]);
+void makeProbability(Model& model, const int arr[10]);
+void addStatisticToProbability(Model& model, const vector<int> &labels, const vector<ImageData> &trainingData);
