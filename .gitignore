@@ -30,6 +30,5 @@
 *.exe
 *.out
 *.app
-
-dir_to_ignore/data
+*.txt
 
