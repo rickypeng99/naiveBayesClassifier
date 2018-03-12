@@ -41,7 +41,6 @@ double prob_of_class[10];
 #endif
 
 //Classification helpers
-void produceConfusionMatrix(double matrix[10][10], const double count[10]);
 bool transferBool(const char &index);
 void determineImage(Model& model, const int arr[10]);
 
@@ -53,3 +52,9 @@ void addStatisticToProbability(Model& model, const vector<int> &labels, const ve
 
 //Reading / writing helpers
 vector<int> readLabelFromFile(const string &fileName);
+void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] );
+
+//Evaluation
+void produceConfusionMatrix(double matrix[10][10], const double count[10]);
+void printHighestPosteriorPossibility();
+void printLowestPosteriorPossibility();

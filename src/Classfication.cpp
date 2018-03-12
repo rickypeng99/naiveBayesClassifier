@@ -6,6 +6,10 @@
 #include <cmath>
 #include <iomanip>
 #include "ImageData.h"
+
+void printHighestAndLowestPost(vector<ImageData> &trainingData, vector<int> &guessingLabels, vector<double> &posteriors,
+                               vector<int> &labels);
+
 void determineImage(Model& model, const int arr[10]) {
 
     ifstream inFile;
@@ -36,6 +40,7 @@ void determineImage(Model& model, const int arr[10]) {
     }
 
     vector<int> guessingLabels;
+    vector<double> posteriors;
 
     for (auto &image : trainingData) {
         double posteriorPossibility[10];
@@ -70,6 +75,7 @@ void determineImage(Model& model, const int arr[10]) {
         }
 
         guessingLabels.push_back(static_cast<int &&>(maxPos));
+        posteriors.push_back(max);
 
 
 
@@ -84,6 +90,7 @@ void determineImage(Model& model, const int arr[10]) {
     }
 
     int correct = 0;
+
     for (unsigned long i = 0; i < labels.size(); i++) {
         if (labels.at(i) == guessingLabels.at(i)) {
             matrix[labels.at(i)][guessingLabels.at(i)]++;
@@ -92,6 +99,9 @@ void determineImage(Model& model, const int arr[10]) {
             matrix[labels.at(i)][guessingLabels.at(i)]++;
         }
     }
+
+    printHighestAndLowestPost(trainingData, guessingLabels, posteriors, labels);
+
 
     double classCount[10];
     for (int i : labels) {
@@ -104,25 +114,57 @@ void determineImage(Model& model, const int arr[10]) {
 
 }
 
-void produceConfusionMatrix(double matrix[10][10], const double count[10]) {
+void printHighestAndLowestPost(vector<ImageData> &trainingData, vector<int> &guessingLabels, vector<double> &posteriors,
+                               vector<int> &labels) {
+    double maxPost = posteriors.at(0);
+    double lowPost = 1000.0;
+    vector<ImageData> highestPost;
+    vector<ImageData> lowestPost;
+    ImageData highest;
+    ImageData lowest;
 
-    cout << "The confusion matrix is: " << endl;
-    for (int i =0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            double val = matrix[i][j];
-            matrix[i][j] = val / count[i];
+    for (int i = 0; i < CLASS_NUM; i++) {
+        for (unsigned long label = 0; label < labels.size(); label++) {
+            if (labels.at(label) == i && labels.at(label) == guessingLabels.at(label) && posteriors.at(label) > maxPost) {
+                maxPost = posteriors.at(label);
+                highest = trainingData.at(label);
+            }
+            if(labels.at(label) == i && labels.at(label) == guessingLabels.at(label) && posteriors.at(label) < lowPost)
+            {
+                lowPost = posteriors.at(label);
+                lowest = trainingData.at(label);
+            }
+        }
+        highestPost.push_back(highest);
+        lowestPost.push_back(lowest);
+        maxPost = -1000.0;
+        lowPost = 1000.0;
+    }
+
+
+    ofstream saveFile("../data/highestPosterior.txt");
+    for (ImageData image : highestPost) {
+        for (int i = 0; i < IMAGE_SIZE; i++) {
+            for (int j = 0; j < IMAGE_SIZE; j++) {
+                saveFile << image.Image[i][j];
+            }
+            saveFile << endl;
         }
     }
 
-    for (int i =0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            cout << setw(12) << matrix[i][j] << setw(12);
+    ofstream saveFile2("../data/lowestPosterior.txt");
+    for (ImageData image : lowestPost) {
+        for (int i = 0; i < IMAGE_SIZE; i++) {
+            for (int j = 0; j < IMAGE_SIZE; j++) {
+                saveFile2 << image.Image[i][j];
+            }
+            saveFile2 << endl;
         }
-        cout << endl;
     }
-
-    cout << "---------------------------------------" << endl;
-
 }
+
+
+
+
 
 

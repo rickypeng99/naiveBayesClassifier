@@ -45,7 +45,9 @@ bool Model::loadFromFile() {
     ifstream inFile("../data/" + fileName);
 
     if (!inFile.is_open()) {
-        return false;
+        cout << "The file is not existed! Please input the correct name" <<endl;
+        exit(0);
+
     }
 
     while(inFile >> data) {
