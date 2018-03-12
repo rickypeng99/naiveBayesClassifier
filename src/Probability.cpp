@@ -4,6 +4,12 @@
 
 #include "ImageData.h"
 
+void countClassFrequency (int arr[10], vector<int> labels) {
+    for (int i : labels) {
+        arr[i]++;
+    }
+}
+
 void addStatisticToProbability(Model& model, const vector<int> &labels, const vector<ImageData> &trainingData) {
     auto sizeOfLabels = static_cast<int>(labels.size());
     auto sizeOfTraining = static_cast<int>(trainingData.size());

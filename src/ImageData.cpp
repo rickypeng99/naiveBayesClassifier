@@ -44,6 +44,10 @@ bool Model::loadFromFile() {
 
     ifstream inFile("../data/" + fileName);
 
+    if (!inFile.is_open()) {
+        return false;
+    }
+
     while(inFile >> data) {
         probabilities[i][j][classNum][binary] = data;
         binary++;
@@ -65,8 +69,9 @@ bool Model::loadFromFile() {
 
 
     cout << "The model.txt is successfully imported!" << endl;
+    cout << "---------------------------------------" << endl;
 
-    return false;
+    return true;
 }
 
 
@@ -98,97 +103,6 @@ vector<int> readLabelFromFile(const string &fileName) {
 
     }
     return labels;
-}
-
-void countClassFrequency (int arr[10], vector<int> labels) {
-    for (int i : labels) {
-        arr[i]++;
-    }
-}
-
-
-
-
-void determineImage(Model& model, const int arr[10]) {
-
-    ifstream inFile;
-    inFile.open("../data/testimages");
-
-    string line;
-    int count = 0;
-
-
-    ImageData imageData = ImageData();
-    vector<ImageData> trainingData;
-    while (getline(inFile, line)) {
-        for (unsigned long i = 0; i < IMAGE_SIZE; i++) {
-            imageData.Image[count][i] = transferBool(line.at(i));
-        }
-
-        count++;
-
-        if (count == IMAGE_SIZE) {
-            //create a temporary imageData to save current value
-            ImageData temp = imageData;
-            //put the temp into the vector
-            trainingData.push_back(temp);
-            //clear the memory of image array
-            memset(imageData.Image, 0, sizeof(imageData.Image));
-
-        }
-    }
-
-    vector<int> guessingLabels;
-
-    for (auto &image : trainingData) {
-        double posteriorPossibility[10];
-        //adding the log(P(class) to each of the posterior possibility first
-        for (int loop = 0; loop < CLASS_NUM; loop++) {
-            posteriorPossibility[loop] = log10(static_cast<float>(arr[loop]));
-        }
-
-        double temp;
-        for (int i = 0; i < IMAGE_SIZE; i++) {
-            for (int j = 0; j < IMAGE_SIZE; j++) {
-                if (image.Image[i][j] == 0) {
-                    for (int classNum = 0; classNum < CLASS_NUM; classNum++) {
-                        temp = log10(model.probabilities[i][j][classNum][0]);
-                        posteriorPossibility[classNum] += temp;
-                    }
-                } else {
-                    for (int classNum = 0; classNum < CLASS_NUM; classNum++) {
-                        temp = log10(model.probabilities[i][j][classNum][1]);
-                        posteriorPossibility[classNum] += temp;
-                    }
-                }
-            }
-        }
-        double max = posteriorPossibility[0];
-        double maxPos = 0;
-        for (int i = 0; i < CLASS_NUM; i++) {
-            if (posteriorPossibility[i] > max) {
-                max = posteriorPossibility[i];
-                maxPos = i;
-            }
-        }
-
-        guessingLabels.push_back(static_cast<int &&>(maxPos));
-
-
-
-    }
-    vector<int> labels = readLabelFromFile("testlabels");
-
-    int correct = 0;
-    for (unsigned long i = 0; i < labels.size(); i++) {
-        if (labels.at(i) == guessingLabels.at(i)) {
-            correct++;
-        }
-    }
-
-
-    cout << "The AI has successfully recognized " << (double)correct/1000.0*100.0 << "% of the testing images." << endl;
-
 }
 
 
@@ -225,6 +139,7 @@ int main() {
 
             }
         }
+
         vector<int> result = readLabelFromFile("traininglabels");
         int classFrequencyArray[10];
         countClassFrequency(classFrequencyArray, result);
@@ -247,6 +162,7 @@ int main() {
         //CLASSIFICATION PHASE
         determineImage(model, classFrequencyArray);
     } else {
+
         Model model;
         model.loadFromFile();
         vector<int> result = readLabelFromFile("traininglabels");
@@ -255,41 +171,4 @@ int main() {
         //CLASSIFICATION PHASE
         determineImage(model, classFrequencyArray);
     }
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-/**
- * printing the first and second image from the trainingData vector
- */
-/*printImage(trainingData.at(0).Image);
-    cout << endl;
-    printImage(trainingData.at(1).Image);*/
-
-
-/*for (int i : result) {
-        cout << i << endl;
-    }
-
-    cout << trainingData.size() << endl;
-    cout << endl;
-    cout << result.size() << endl;*/
-
-/*for (int i : classFrequencyArray) {
-        cout << sizeof(classFrequencyArray)/sizeof(classFrequencyArray[0]) << endl;
-    }*/

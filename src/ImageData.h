@@ -38,9 +38,18 @@ public:
 double probabilities[28][28][10][2];//value of features, 1 or 0
 double prob_of_class[10];
 };
-#endif //NAIVEBAYES_IMAGEDATA_
+#endif
 
+//Classification helpers
+void produceConfusionMatrix(double matrix[10][10], const double count[10]);
+bool transferBool(const char &index);
+void determineImage(Model& model, const int arr[10]);
 
+//Probability helpers
+void countClassFrequency (int arr[10], vector<int> labels);
 void calculateProbabilityOfClass(Model& model, const int arr[10]);
 void makeProbability(Model& model, const int arr[10]);
 void addStatisticToProbability(Model& model, const vector<int> &labels, const vector<ImageData> &trainingData);
+
+//Reading / writing helpers
+vector<int> readLabelFromFile(const string &fileName);
