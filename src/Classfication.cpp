@@ -1,5 +1,6 @@
 //
 // Created by Ricky Peng on 3/12/18.
+// This class is used to classify the images
 //
 
 #include <fstream>
@@ -8,7 +9,12 @@
 #include "ImageData.h"
 
 
-
+/**
+ *
+ * @param model the probability model
+ * @param arr the array of classes counts
+ * This function will be classifying the test images
+ */
 void determineImage(Model& model, const int arr[10]) {
 
     vector<ImageData> trainingData;
@@ -64,6 +70,17 @@ void determineImage(Model& model, const int arr[10]) {
 
 }
 
+
+/**
+ *
+ * @param model the probability model
+ * @param guessingLabels the guessing from thr AI
+ * @param posteriors the maximum posterior probability array
+ * @param image the ImageData object
+ * @param posteriorPossibility the posterior probability array
+ * This functions will be calculating the highest posterior possibility for every class,
+ * the array will then be used to classify the images
+ */
 void generatingPosteriors(const Model &model, vector<int> &guessingLabels, vector<double> &posteriors,
                           const ImageData &image, double *posteriorPossibility) {
     double temp;

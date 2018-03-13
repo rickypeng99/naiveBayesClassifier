@@ -4,12 +4,25 @@
 
 #include "ImageData.h"
 
+/**
+ *
+ * @param arr the classes counting array
+ * @param labels
+ * counting the frequency of appearences of different classes
+ */
 void countClassFrequency (int arr[10], vector<int> labels) {
     for (int i : labels) {
         arr[i]++;
     }
 }
 
+/**
+ *
+ * @param model the probability model
+ * @param labels
+ * @param trainingData images
+ * counting
+ */
 void addStatisticToProbability(Model& model, const vector<int> &labels, const vector<ImageData> &trainingData) {
     auto sizeOfLabels = static_cast<int>(labels.size());
     auto sizeOfTraining = static_cast<int>(trainingData.size());
@@ -28,8 +41,6 @@ void addStatisticToProbability(Model& model, const vector<int> &labels, const ve
             }
         }
     }
-
-
     for (unsigned long pos = 0; pos < trainingData.size(); pos++) {
         ImageData currentImage = trainingData.at((pos));
         for (int i = 0; i < IMAGE_SIZE; i++) {
@@ -40,24 +51,14 @@ void addStatisticToProbability(Model& model, const vector<int> &labels, const ve
             }
         }
     }
-
-    /*for (int num = 0; num < CLASS_NUM; num++) {
-        for (int width = 0; width < IMAGE_SIZE; width++) {
-            for (int height = 0; height < IMAGE_SIZE; height++) {
-                for (int binary = 0; binary < 2; binary++) {
-                    cout << model.probabilities[width][height][num][binary] << " ";
-                }
-            }
-            cout << endl;
-        }
-        cout << endl;
-    }*/
-
-
-
-
 }
 
+/**
+ *
+ * @param model probability model
+ * @param arr counting array
+ * producing the probability matrix
+ */
 void makeProbability(Model& model, const int arr[10]) {
 
 
@@ -73,21 +74,13 @@ void makeProbability(Model& model, const int arr[10]) {
         }
     }
 
-    //
-    /*for (int num = 0; num < CLASS_NUM; num++) {
-        for (int width = 0; width < IMAGE_SIZE; width++) {
-            for (int height = 0; height < IMAGE_SIZE; height++) {
-                for (int binary = 0; binary < 2; binary++) {
-                    cout << model.probabilities[width][height][num][binary] << " ";
-                }
-            }
-            cout << endl;
-        }
-        cout << endl;
-    }*/
-
 }
 
+/**
+ *
+ * @param model the probability model
+ * @param arr the counting array
+ */
 void calculateProbabilityOfClass(Model& model, const int arr[10]) {
     for (int i = 0 ; i < 10; i ++) {
         model.prob_of_class[i] = arr[i] / 5000.0;

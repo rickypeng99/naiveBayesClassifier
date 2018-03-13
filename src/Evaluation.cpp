@@ -1,11 +1,18 @@
 //
 // Created by Ricky Peng on 3/12/18.
+// This class provides evaluations to the results
 //
 
 #include <iomanip>
 #include <fstream>
 #include "ImageData.h"
 
+
+/**
+ *
+ * @param matrix the confusion matrix (only counts when passed in)
+ * @param count the count of classes array
+ */
 void produceConfusionMatrix(double matrix[10][10], const double count[10]) {
 
     cout << "The confusion matrix is: " << endl;
@@ -27,6 +34,15 @@ void produceConfusionMatrix(double matrix[10][10], const double count[10]) {
 
 }
 
+/**
+ *
+ * @param trainingData the images
+ * @param guessingLabels the guessing from AI
+ * @param posteriors the maximum posterior array
+ * @param labels the actual labels of the images
+ * This function will produce the most and least typical images of classes
+ *
+ */
 void printHighestAndLowestPost(vector<ImageData> &trainingData, vector<int> &guessingLabels, vector<double> &posteriors,
                                vector<int> &labels) {
     double maxPost = posteriors.at(0);

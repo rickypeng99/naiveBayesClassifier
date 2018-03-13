@@ -3,15 +3,54 @@
 //
 #include "ImageData.h"
 #include <fstream>
-#include <cmath>
-#include <iostream>
 #include <iomanip>
 
 
 using namespace std;
 
-//loop that reads the string from lines
-//read the characters stick them into the arrays
+int main() {
+    ifstream in("../data/model.txt");
+    if (in.peek() == std::ifstream::traits_type::eof()) {
+        vector<ImageData> trainingData;
+
+        readingImages(trainingData, "trainingImages");
+
+        vector<int> result = readLabelFromFile("traininglabels");
+        int classFrequencyArray[10];
+        countClassFrequency(classFrequencyArray, result);
+
+        // TRAINING PHASE
+        cout << "Training the AI, using the K value of " << K << " for laplace smoothing" << endl;
+        Model model{};
+        //count the amount of C = class at F = Fij
+        addStatisticToProbability(model, result, trainingData);
+        //transfer the counting to possibilities
+        makeProbability(model, classFrequencyArray);
+        //Getting P(class)
+        calculateProbabilityOfClass(model, classFrequencyArray);
+
+        cout << "Finished training your AI with 5000 images" << endl;
+        cout << "The model has been saved into model.txt" << endl;
+
+        model.saveToFile();
+        //CLASSIFICATION PHASE
+        determineImage(model, classFrequencyArray);
+    } else {
+
+        Model model;
+        model.loadFromFile();
+        vector<int> result = readLabelFromFile("traininglabels");
+        int classFrequencyArray[10];
+        countClassFrequency(classFrequencyArray, result);
+        //CLASSIFICATION PHASE
+        determineImage(model, classFrequencyArray);
+    }
+}
+
+/**
+ * saves the possibility matrix to the file.
+ * @return true if saved
+ */
 bool Model::saveToFile() {
 
     ofstream saveFile("../data/model.txt");
@@ -34,6 +73,11 @@ bool Model::saveToFile() {
     return true;
 }
 
+
+/**
+ * load the possibility matrix from the file
+ * @return true if successful
+ */
 bool Model::loadFromFile() {
     double data = 0.0;
     int i = 0;
@@ -81,11 +125,20 @@ bool Model::loadFromFile() {
 
 
 
-
+/**
+ *
+ * @param index the character from image
+ * @return true if # or +
+ */
 bool transferBool(const char &index) {
     return index == '#' || index == '+';
 }
 
+/**
+ *
+ * @param array the image
+ * a printing function, used only for debugging
+ */
 void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] ) {
     int height = IMAGE_SIZE;
     int width = IMAGE_SIZE;
@@ -97,6 +150,11 @@ void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] ) {
     }
 }
 
+/**
+ *
+ * @param fileName
+ * @return the labels from a label file
+ */
 vector<int> readLabelFromFile(const string &fileName) {
     ifstream inFile;
     inFile.open("../data/" + fileName);
@@ -110,45 +168,14 @@ vector<int> readLabelFromFile(const string &fileName) {
 }
 
 
-int main() {
-    ifstream in("../data/model.txt");
-    if (in.peek() == std::ifstream::traits_type::eof()) {
-        vector<ImageData> trainingData;
 
-        readingImages(trainingData, "trainingImages");
 
-        vector<int> result = readLabelFromFile("traininglabels");
-        int classFrequencyArray[10];
-        countClassFrequency(classFrequencyArray, result);
-
-        // TRAINING PHASE
-        cout << "Training the AI, using the K value of " << K << " for laplace smoothing" << endl;
-        Model model{};
-        //count the amount of C = class at F = Fij
-        addStatisticToProbability(model, result, trainingData);
-        //transfer the counting to possibilities
-        makeProbability(model, classFrequencyArray);
-        //Getting P(class)
-        calculateProbabilityOfClass(model, classFrequencyArray);
-
-        cout << "Finished training your AI with 5000 images" << endl;
-        cout << "The model has been saved into model.txt" << endl;
-
-        model.saveToFile();
-        //CLASSIFICATION PHASE
-        determineImage(model, classFrequencyArray);
-    } else {
-
-        Model model;
-        model.loadFromFile();
-        vector<int> result = readLabelFromFile("traininglabels");
-        int classFrequencyArray[10];
-        countClassFrequency(classFrequencyArray, result);
-        //CLASSIFICATION PHASE
-        determineImage(model, classFrequencyArray);
-    }
-}
-
+/**
+ *
+ * @param trainingData raw image file
+ * @param fileName
+ * input images to an array
+ */
 void readingImages(vector<ImageData>& trainingData, string fileName) {
     ifstream inFile;
     inFile.open("../data/" + fileName);
