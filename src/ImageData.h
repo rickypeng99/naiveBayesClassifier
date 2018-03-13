@@ -34,7 +34,9 @@ public:
 class Model{
 public:
     bool saveToFile();
+    bool saveToFileTo(string fileName);
     bool loadFromFile();
+    bool loadFromFileFrom(string fileName);
 double probabilities[28][28][10][2];//value of features, 1 or 0
 double prob_of_class[10];
 };
@@ -43,6 +45,8 @@ double prob_of_class[10];
 //Classification helpers
 bool transferBool(const char &index);
 void determineImage(Model& model, const int arr[10]);
+void generatingPosteriors(const Model &model, vector<int> &guessingLabels, vector<double> &posteriors,
+                          const ImageData &image, double *posteriorPossibility);
 
 //Probability helpers
 void countClassFrequency (int arr[10], vector<int> labels);
@@ -53,6 +57,7 @@ void addStatisticToProbability(Model& model, const vector<int> &labels, const ve
 //Reading / writing helpers
 vector<int> readLabelFromFile(const string &fileName);
 void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] );
+void readingImages(vector<ImageData>& trainingData, string fileName);
 
 //Evaluation
 void produceConfusionMatrix(double matrix[10][10], const double count[10]);

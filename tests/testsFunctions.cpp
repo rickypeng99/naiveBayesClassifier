@@ -130,6 +130,28 @@ bool Model::saveToFile() {
     return true;
 }
 
+bool Model::saveToFileTo(string fileName) {
+
+    ofstream saveFile("../data/" + fileName);
+    if (!saveFile) {
+        return false;
+    }
+
+    for (int num = 0; num < CLASS_NUM; num++) {
+        for (int width = 0; width < IMAGE_SIZE; width++) {
+            for (int height = 0; height < IMAGE_SIZE; height++) {
+                for (int binary = 0; binary < 2; binary++) {
+                    saveFile << setw(12) << probabilities[width][height][num][binary] << setw(12);
+                }
+            }
+            saveFile << endl;
+        }
+        saveFile << endl;
+    }
+    saveFile.close();
+    return true;
+}
+
 bool Model::loadFromFile() {
     double data = 0.0;
     int i = 0;
@@ -174,7 +196,48 @@ bool Model::loadFromFile() {
     return true;
 }
 
+bool Model::loadFromFileFrom(string fileName) {
+    double data = 0.0;
+    int i = 0;
+    int j = 0;
+    int classNum = 0;
+    int binary = 0;
 
+
+
+    ifstream inFile("../data/" + fileName);
+
+    if (!inFile.is_open()) {
+        cout << "The file is not existed! Please input the correct name" <<endl;
+        exit(0);
+
+    }
+
+    while(inFile >> data) {
+        probabilities[i][j][classNum][binary] = data;
+        binary++;
+        if (binary > 1) {
+            j++;
+            binary = 0;
+        }
+        if (j > 27) {
+            i++;
+            j = 0;
+        }
+        if (i > 27) {
+            classNum++;
+            i=0;
+            j=0;
+        }
+    }
+
+
+
+    cout << "The model.txt is successfully imported!" << endl;
+    cout << "---------------------------------------" << endl;
+
+    return true;
+}
 
 
 
@@ -398,6 +461,35 @@ void determineImage(Model& model, const int arr[10]) {
 
 
     cout << "The AI has successfully recognized " << (double)correct/10.0 << "% of the testing images." << endl;
+
+}
+
+void readingImages(vector<ImageData>& trainingData, string fileName) {
+    ifstream inFile;
+    inFile.open("../data/" + fileName);
+    string line;
+    int count = 0;
+    ImageData imageData{};
+
+
+    while (getline(inFile, line)) {
+        for (unsigned long i = 0; i < IMAGE_SIZE; i++) {
+            imageData.Image[count][i] = transferBool(line.at(i));
+        }
+
+        count++;
+
+        if (count == IMAGE_SIZE) {
+            //create a temporary imageData to save current value
+            ImageData temp = imageData;
+            //put the temp into the vector
+            trainingData.push_back(temp);
+            //clear the memory of image array
+            memset(imageData.Image, 0, sizeof(imageData.Image));
+
+        }
+    }
+
 
 }
 

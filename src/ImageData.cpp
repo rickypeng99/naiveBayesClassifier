@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 
+
 using namespace std;
 
 //loop that reads the string from lines
@@ -109,44 +110,16 @@ vector<int> readLabelFromFile(const string &fileName) {
 }
 
 
-
-
-
 int main() {
     ifstream in("../data/model.txt");
     if (in.peek() == std::ifstream::traits_type::eof()) {
-
-        ifstream inFile;
-        inFile.open("../data/trainingimages");
-
-        string line;
-        int count = 0;
-
-
-        ImageData imageData{};
         vector<ImageData> trainingData;
-        while (getline(inFile, line)) {
-            for (unsigned long i = 0; i < IMAGE_SIZE; i++) {
-                imageData.Image[count][i] = transferBool(line.at(i));
-            }
 
-            count++;
-
-            if (count == IMAGE_SIZE) {
-                //create a temporary imageData to save current value
-                ImageData temp = imageData;
-                //put the temp into the vector
-                trainingData.push_back(temp);
-                //clear the memory of image array
-                memset(imageData.Image, 0, sizeof(imageData.Image));
-
-            }
-        }
+        readingImages(trainingData, "trainingImages");
 
         vector<int> result = readLabelFromFile("traininglabels");
         int classFrequencyArray[10];
         countClassFrequency(classFrequencyArray, result);
-
 
         // TRAINING PHASE
         cout << "Training the AI, using the K value of " << K << " for laplace smoothing" << endl;
@@ -174,4 +147,33 @@ int main() {
         //CLASSIFICATION PHASE
         determineImage(model, classFrequencyArray);
     }
+}
+
+void readingImages(vector<ImageData>& trainingData, string fileName) {
+    ifstream inFile;
+    inFile.open("../data/" + fileName);
+    string line;
+    int count = 0;
+    ImageData imageData{};
+
+
+    while (getline(inFile, line)) {
+            for (unsigned long i = 0; i < IMAGE_SIZE; i++) {
+                imageData.Image[count][i] = transferBool(line.at(i));
+            }
+
+            count++;
+
+            if (count == IMAGE_SIZE) {
+                //create a temporary imageData to save current value
+                ImageData temp = imageData;
+                //put the temp into the vector
+                trainingData.push_back(temp);
+                //clear the memory of image array
+                memset(imageData.Image, 0, sizeof(imageData.Image));
+
+            }
+        }
+
+
 }
