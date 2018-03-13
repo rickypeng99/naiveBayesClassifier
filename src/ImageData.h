@@ -56,5 +56,5 @@ void printImage(bool (&array)[IMAGE_SIZE][IMAGE_SIZE] );
 
 //Evaluation
 void produceConfusionMatrix(double matrix[10][10], const double count[10]);
-void printHighestPosteriorPossibility();
-void printLowestPosteriorPossibility();
+void printHighestAndLowestPost(vector<ImageData> &trainingData, vector<int> &guessingLabels, vector<double> &posteriors,
+                               vector<int> &labels);

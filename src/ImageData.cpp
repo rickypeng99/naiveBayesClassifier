@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -21,7 +22,7 @@ bool Model::saveToFile() {
         for (int width = 0; width < IMAGE_SIZE; width++) {
             for (int height = 0; height < IMAGE_SIZE; height++) {
                 for (int binary = 0; binary < 2; binary++) {
-                    saveFile<< probabilities[width][height][num][binary] << " ";
+                    saveFile << setw(12) << probabilities[width][height][num][binary] << setw(12);
                 }
             }
             saveFile << endl;
